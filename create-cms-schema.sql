@@ -1,15 +1,14 @@
 -- DROP TABLE IF EXISTS post_tags, tags, posts, authors;
 
-CREATE TABLE IF NOT EXISTS authors (
+CREATE TABLE IF NOT EXISTS recipies (
     id SERIAL PRIMARY KEY,
-    firstName TEXT NOT NULL,
-    lastName TEXT NOT NULL
+    name TEXT NOT NULL,
+    description TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS posts (
+CREATE TABLE IF NOT EXISTS steps (
     id SERIAL PRIMARY KEY,
-    auth_id INTEGER REFERENCES authors,
-    title TEXT NOT NULL,
+    recipies_id INTEGER REFERENCES recipies,
     body TEXT NOT NULL
 );
 
@@ -18,8 +17,8 @@ CREATE TABLE IF NOT EXISTS tags (
     name TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS post_tags (
-    post_id INTEGER REFERENCES posts,
+CREATE TABLE IF NOT EXISTS recipies_tags (
+    recipies_id INTEGER REFERENCES recipies,
     tag_id INTEGER REFERENCES tags,
-    PRIMARY KEY (post_id, tag_id)
+    PRIMARY KEY (recipies_id, tag_id)
 );
