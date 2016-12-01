@@ -118,7 +118,34 @@ var knex = require('knex')({
 // Delete one of the recipies
 // knex.del().from('tags').where({name: 'take out'}).then();
 
+// var innerJoin = knex.from('recipies').innerJoin('steps', 'steps.recipies_id', 'recipies.id');
+// console.log(innerJoin.toString());
+
+var express = require('express');
+var jsonParser = require('json-parser');
+
+var app = express();
+
+// app.use('jsonParser');
+
+app.post('/recipes', jsonParser, function(request, response){
+  // insert a recipe into the database and store it in a var
+  // return an id for the recipies
+  // var recipies =
+  console.log(request.body);
+  knex('recipies').insert({
+    name: request.body.name,
+    description: request.body.description
+  }).then();
 
 
+  // insert a steps into the database and store it in a var
+  // use recipies ID as a foriegn key
+  // var steps =
+  // insert a tags into the database and store it in a var
+  // var tags =
 
+});
 
+var port = process.env.PORT || 8080;
+app.listen(port, function(){console.log('listening on port ' + port)});
