@@ -122,7 +122,7 @@ var knex = require('knex')({
 // console.log(innerJoin.toString());
 
 var express = require('express');
-var jsonParser = require('json-parser');
+var jsonParser = require('body-parser').json();
 
 var app = express();
 
@@ -133,10 +133,21 @@ app.post('/recipes', jsonParser, function(request, response){
   // return an id for the recipies
   // var recipies =
   console.log(request.body);
-  knex('recipies').insert({
+
+  knex('recipies').returning('id').insert({
     name: request.body.name,
     description: request.body.description
-  }).then();
+  }).then(function (id){
+  	// id[0]
+  	// console.log(arguments);
+  	// request.body.steps.forEach -> ...
+  	// 1. Construct an array of promises to insert each step into the DB.
+  	// 2. Construct an array of promises to insert each tag and then, with tag ID, add the join into the DB.
+  	// 3. Use Promise.all to run all the promises at once.
+  	// 4. Return the response.
+
+    response.status(201).json({message: 'ok'})
+  });
 
 
   // insert a steps into the database and store it in a var
