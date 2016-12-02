@@ -151,22 +151,32 @@ app.post('/recipes', jsonParser, function(request, response){
     name: data.name,
     description: data.description
   }).then((recipeIds) => {
-  	//console.log(arguments);
-  	//console.log(recipeId[0]);
   	const recipeId = recipeIds[0];
 
   	// 1. Construct an array of promises to insert each step into the DB.
-  	const stepArr = data.steps.map(step =>{
+  	const stepsPromise = data.steps.map(step =>{
+  		//console.log('this is the step we are inserting into the database table for steps' + step);
 		return knex.insert({ body:step, recipies_id:recipeId}).into('steps');
 	});
   	// 2. Construct an array of promises to insert each tag and then, with tag ID, add the join into the DB.
 
-  	const tagPromises = data.tags.amp(tagName=>{
+  	const tagsPromises = data.tags.map(tagName=>{
+  		//console.log('this is the tag we are inserting into the database' + tagName)
 
+  		// if this condition is false (select all from tags table where name = tagName) then insert the tag
+  		return knex.insert({name: tagName}).into('tags');
   	});
-  	// 3. Use Promise.all to run all the promises at once.
-  	const allPromises = stepArr.concat(tagPromises);
+
+  	//const recipiesTagsPromise = 
+
+  	// // 3. Use Promise.all to run all the promises at once.
+  	const allPromises = stepsPromise.concat(tagsPromises);
+  	console.log("this is allPromises variable" + allPromises)
   	 return Promise.all(allPromises);
+  	 
+  	 //console.log('this is the steps promise: ' + stepsPromise);
+  	 // console.log('tags promise: ' + tagsPromises)
+  	 //return Promise.all([stepsPromise, tagsPromises])
   	
   	// 4. Return the response.
  	}).then(()=>{
@@ -176,14 +186,83 @@ app.post('/recipes', jsonParser, function(request, response){
 });
  
 
-   // var tagsArr = [];
-   // req.body.tags.forEach(function(tag){
-   // 	console.log(tag);
-   // 	tagsArr.push(tag);
-   // })
+// -------------------Solution for Post route
 
+// app.post('/recipes', jsonParser, function(request, response) {
+//   function createRecipeTag(recipeId, tagId) {
+//     return knex
+//       .insert({ 'recipe_id': recipeId, 'tag_id': tagId })
+//       .into('recipes_tags');
+//   }
 
+//   const data = request.body;
 
+//   knex.insert({ name: data.name }).into('recipes').returning('id')
+//     .then((recipeIds) => {
+//       const recipeId = recipeIds[0];
+
+//       const stepPromises = data.steps.map(step => {
+//         return knex.insert({ instructions: step, 'recipe_id': recipeId }).into('steps');
+//       });
+
+//       const tagPromises = data.tags.map(tagName => {
+//         knex
+//           .select('id')
+//           .from('tags')
+//           .where({ name: tagName })
+//           .then((tags) => {
+//             if (tags.length > 0) {
+//               return createRecipeTag(recipeId, tags[0].id)
+//             } else {
+//               return knex
+//                 .insert({ 'name': tagName })
+//                 .into('tags')
+//                 .returning('id')
+//                 .then((tagIds) => {
+//                   return createRecipeTag(recipeId, tagIds[0]);
+//                 });
+//             }
+//           });
+//       });
+
+//       const allPromises = stepPromises.concat(tagPromises);
+//       return Promise.all(allPromises);
+//     }).then(() => {
+//       return response.status(201).json({});
+//     });
+// });
+
+//------------------------------------solution for get route
+
+// app.get('/recipes', function(request, response) {
+//   knex
+//     .select('*')
+//     .from('recipes')
+//     .then(recipes => {
+//       const recipePromises = recipes.map(recipe => {
+//         const stepsPromise = knex
+//           .select('*')
+//           .from('steps')
+//           .where({ 'recipe_id': recipe.id });
+
+//         const tagsPromise = knex
+//           .select('*')
+//           .from('recipes_tags')
+//           .where({ 'recipe_id': recipe.id })
+//           .join('tags', 'recipes_tags.tag_id', 'tags.id');
+
+//         return Promise.all([ stepsPromise, tagsPromise ])
+//           .then(result => {
+//             recipe.steps = result[0].map(step => { return step.instructions });
+//             recipe.tags = result[1].map(tag => { return tag.name });
+//           });
+//       });
+
+//       Promise.all(recipePromises).then(() => {
+//         return response.status(200).json(recipes);
+//       });
+//     });
+// });
 
 
 
