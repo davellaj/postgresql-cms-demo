@@ -1,4 +1,4 @@
-var knex = require('knex')({
+const knex = require('knex')({
   client: 'pg',
   connection: 'postgres://tzagtquy:Wz64KnAIYB5kqb96YAyVdojgtalmvKZP@elmer.db.elephantsql.com:5432/tzagtquy',
   debug: false
@@ -121,42 +121,71 @@ var knex = require('knex')({
 // var innerJoin = knex.from('recipies').innerJoin('steps', 'steps.recipies_id', 'recipies.id');
 // console.log(innerJoin.toString());
 
-var express = require('express');
-var jsonParser = require('body-parser').json();
+const express = require('express');
+const jsonParser = require('body-parser').json();
 
-var app = express();
+const app = express();
 
 // app.use('jsonParser');
 
+
+
 app.post('/recipes', jsonParser, function(request, response){
+  
+//jamie and heriberto's pseudo code for post request for recipes
   // insert a recipe into the database and store it in a var
   // return an id for the recipies
   // var recipies =
-  console.log(request.body);
+  //console.log(request.body);
 
-  knex('recipies').returning('id').insert({
-    name: request.body.name,
-    description: request.body.description
-  }).then(function (id){
-  	// id[0]
-  	// console.log(arguments);
-  	// request.body.steps.forEach -> ...
-  	// 1. Construct an array of promises to insert each step into the DB.
-  	// 2. Construct an array of promises to insert each tag and then, with tag ID, add the join into the DB.
-  	// 3. Use Promise.all to run all the promises at once.
-  	// 4. Return the response.
-
-    response.status(201).json({message: 'ok'})
-  });
-
-
+  //then
   // insert a steps into the database and store it in a var
   // use recipies ID as a foriegn key
   // var steps =
   // insert a tags into the database and store it in a var
   // var tags =
 
+  const data = request.body;
+
+  knex('recipies').returning('id').insert({
+    name: data.name,
+    description: data.description
+  }).then((recipeIds) => {
+  	//console.log(arguments);
+  	//console.log(recipeId[0]);
+  	const recipeId = recipeIds[0];
+
+  	// 1. Construct an array of promises to insert each step into the DB.
+  	const stepArr = data.steps.map(step =>{
+		return knex.insert({ body:step, recipies_id:recipeId}).into('steps');
+	});
+  	// 2. Construct an array of promises to insert each tag and then, with tag ID, add the join into the DB.
+
+  	const tagPromises = data.tags.amp(tagName=>{
+
+  	});
+  	// 3. Use Promise.all to run all the promises at once.
+  	const allPromises = stepArr.concat(tagPromises);
+  	 return Promise.all(allPromises);
+  	
+  	// 4. Return the response.
+ 	}).then(()=>{
+	response.status(201).json({})
+  });
+
 });
+ 
+
+   // var tagsArr = [];
+   // req.body.tags.forEach(function(tag){
+   // 	console.log(tag);
+   // 	tagsArr.push(tag);
+   // })
+
+
+
+
+
 
 var port = process.env.PORT || 8080;
 app.listen(port, function(){console.log('listening on port ' + port)});
